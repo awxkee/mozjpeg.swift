@@ -1,4 +1,4 @@
 module mozjpegc {
-    header "MozjpegBinding.h"
+    umbrella header "MozjpegBinding.h"
     export *
 }

@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "mozjpeg.swift",
+    name: "mozjpeg",
     platforms: [
         .iOS(.v12)
     ],
