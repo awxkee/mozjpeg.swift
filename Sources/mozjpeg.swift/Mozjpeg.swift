@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import mozjpeg_c
+@_exported import mozjpeg_c
 
 struct CannotCompressError: Error, Equatable { }
 
