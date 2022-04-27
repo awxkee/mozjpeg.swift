@@ -1,4 +1,4 @@
-module mozjpeg_c {
+module mozjpegc {
     header "MozjpegBinding.h"
     export *
 }
