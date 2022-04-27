@@ -107,7 +107,6 @@ let package = Package(
                 "jsimddct.h",
                 "jversion.h",
                 "wrppm.h",
-                "transupp.h",
                 "MozjpegBinding.m"
             ],
             publicHeadersPath: "include",
