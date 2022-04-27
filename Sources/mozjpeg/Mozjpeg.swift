@@ -7,7 +7,9 @@
 
 import Foundation
 import UIKit
+#if SWIFT_PACKAGE
 import mozjpegc
+#endif
 
 public struct CannotCompressError: Error, Equatable { }
 
