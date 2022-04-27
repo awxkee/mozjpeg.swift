@@ -6,7 +6,10 @@
 //
 
 import Foundation
-@_exported import mozjpeg_c
+import UIKit
+#if SWIFT_PACKAGE
+import mozjpeg_c
+#endif
 
 struct CannotCompressError: Error, Equatable { }
 

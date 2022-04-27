@@ -1,14 +1,4 @@
 module mozjpeg_c {
-//    header "../jpeglib.h"
-//    header "../jpegint.h"
-//    header "../transupp.h"
-//    header "../jerror.h"
-//    header "../jinclude.h"
-//    header "../jconfig.h"
-//    header "../jmorecfg.h"
-//    header "../jdct.h"
-//    header "../jsimddct.h"
     header "MozjpegBinding.h"
-    link "z"
     export *
 }

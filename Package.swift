@@ -12,7 +12,7 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "mozjpeg.swift",
-            targets: ["mozjpeg.swift"]),
+            targets: ["mozjpeg.swift", "mozjpeg.c"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -23,7 +23,9 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "mozjpeg.swift",
-            dependencies: ["mozjpeg.c"]),
+            dependencies: [
+                .target(name: "mozjpeg.c")
+            ]),
         .target(
             name: "mozjpeg.c",
             dependencies: [],
