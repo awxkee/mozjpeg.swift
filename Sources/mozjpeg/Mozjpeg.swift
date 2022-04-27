@@ -9,9 +9,9 @@ import Foundation
 import UIKit
 @_implementationOnly import mozjpegc
 
-struct CannotCompressError: Error, Equatable { }
+public struct CannotCompressError: Error, Equatable { }
 
-extension UIImage {
+public extension UIImage {
     /**
      Compressed Image to Mozjpeg data
      - Returns **Data**: final JPEG data
