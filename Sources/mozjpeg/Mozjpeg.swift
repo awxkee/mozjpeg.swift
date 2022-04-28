@@ -21,12 +21,12 @@ public class MozjpegEncoder {
         
     }
     
-    public func createCompress(image: UIImage, quality: Float) throws {
-        try compression.createCompress(image, quality: max(1, Int32(quality * 100)))
+    public func createCompress(quality: Float, width: Int32, height: Int32) throws {
+        compression.createCompress(max(1, Int32(quality * 100)), width: width, height: height)
     }
     
     public func addImage(image: UIImage, quality: Float) throws {
-        try compression.addEncoderImage(image, quality: max(1, Int32(quality * 100)))
+        try compression.addEncoderImage(image)
     }
     
     public func finish() -> Data {

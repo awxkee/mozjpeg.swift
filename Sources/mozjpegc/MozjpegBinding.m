@@ -75,7 +75,7 @@ uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
     return result;
 }
 
--(void* _Nullable) addEncoderImage:(UIImage*_Nonnull)sourceImage quality:(int)quality error:(NSError *_Nullable*_Nullable)error {
+-(void* _Nullable) addEncoderImage:(UIImage*_Nonnull)sourceImage error:(NSError *_Nullable*_Nullable)error {
     int width = (int)(sourceImage.size.width * sourceImage.scale);
     int height = (int)(sourceImage.size.height * sourceImage.scale);
     uint8_t* buffer = createRGB8Buffer(sourceImage);
@@ -94,23 +94,10 @@ uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
     return nil;
 }
 
--(void* _Nullable) createCompress:(UIImage*_Nonnull)sourceImage quality:(int)quality error:(NSError *_Nullable*_Nullable)error {
-    int width = (int)(sourceImage.size.width * sourceImage.scale);
-    int height = (int)(sourceImage.size.height * sourceImage.scale);
-    uint8_t* buffer = createRGB8Buffer(sourceImage);
-    int bufferBytesPerRow = ((3 * (int)width) + 31) & (~31);
-    
+-(void) createCompress:(int)quality width:(int)width height:(int)height{
     struct jpeg_compress_struct cinfo;
     struct my_error_mgr jerr;
     cinfo.err = jpeg_std_error(&jerr.pub);
-    if (setjmp(jerr.setjmp_buffer)) {
-        /* If we get here, the JPEG code has signaled an error.
-         * We need to clean up the JPEG object, close the input file, and return.
-         */
-        *error = [[NSError alloc] initWithDomain:@"JPEGCompression" code:500 userInfo:@{ NSLocalizedDescriptionKey: NSLocalizedString(@"`addEncoderImage` failed", nil) }];
-        jpeg_destroy_compress(&cinfo);
-        return nil;
-    }
     jpeg_create_compress(&cinfo);
     
     uint8_t *outBuffer = NULL;
@@ -130,16 +117,6 @@ uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
     jpeg_set_quality(&cinfo, quality, 1);
     jpeg_simple_progression(&cinfo);
     jpeg_start_compress(&cinfo, 1);
-    
-    JSAMPROW rowPointer[1];
-    while (cinfo.next_scanline < cinfo.image_height) {
-        rowPointer[0] = (JSAMPROW)(buffer + cinfo.next_scanline * bufferBytesPerRow);
-        jpeg_write_scanlines(&cinfo, rowPointer, 1);
-    }
-    
-    free(buffer);
-    
-    self->width = width;
     return nil;
 }
 

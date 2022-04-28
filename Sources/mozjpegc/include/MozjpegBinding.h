@@ -29,8 +29,8 @@ typedef struct my_error_mgr * my_error_ptr;
 
 -(NSData * _Nonnull)finishCompress;
 
--(void* _Nullable) addEncoderImage:(UIImage*_Nonnull)sourceImage quality:(int)quality error:(NSError *_Nullable*_Nullable)error;
--(void* _Nullable) createCompress:(UIImage*_Nonnull)sourceImage quality:(int)quality error:(NSError *_Nullable*_Nullable)error;
+-(void* _Nullable) addEncoderImage:(UIImage*_Nonnull)sourceImage error:(NSError *_Nullable*_Nullable)error;
+-(void) createCompress:(int)quality width:(int)width height:(int)height;
 @end
 
 NSData * _Nullable compressJPEGData(UIImage * _Nonnull sourceImage, int quality) NS_SWIFT_NAME(compressMozjpeg(image:quality:));
