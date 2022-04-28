@@ -94,7 +94,6 @@ NSData * _Nullable compressJPEGData(UIImage * _Nonnull sourceImage, int quality)
     cinfo.image_height = (uint32_t)height;
     cinfo.input_components = 3;
     cinfo.in_color_space = JCS_RGB;
-    cinfo.jpeg_color_space = JCS_YCbCr;
     jpeg_c_set_int_param(&cinfo, JINT_COMPRESS_PROFILE, JCP_FASTEST);
     jpeg_set_defaults(&cinfo);
     cinfo.arith_code = FALSE;
