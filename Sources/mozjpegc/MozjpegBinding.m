@@ -90,6 +90,7 @@ uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
     while (lines < height) {
         rowPointer[0] = (JSAMPROW)(buffer + lines * bufferBytesPerRow);
         jpeg_write_scanlines(&cinfo, rowPointer, 1);
+        lines = lines + 1;
     }
     
     free(buffer);
