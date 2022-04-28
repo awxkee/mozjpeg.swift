@@ -17,7 +17,11 @@ public class MozjpegEncoder {
     
     private let compression = JPEGCompression()
     
-    public init(image: UIImage, quality: Float) throws {
+    public init() {
+        
+    }
+    
+    public func createCompress(image: UIImage, quality: Float) throws {
         try compression.createCompress(image, quality: max(1, Int32(quality * 100)))
     }
     
