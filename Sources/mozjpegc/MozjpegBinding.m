@@ -96,8 +96,6 @@ uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
 }
 
 -(void) createCompress:(int)quality width:(int)width height:(int)height{
-    struct jpeg_compress_struct cinfo;
-    struct my_error_mgr jerr;
     cinfo.err = jpeg_std_error(&jerr.pub);
     jpeg_create_compress(&cinfo);
     
