@@ -86,8 +86,9 @@ uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
     }
     int bufferBytesPerRow = ((3 * (int)width) + 31) & (~31);
     JSAMPROW rowPointer[1];
-    while (cinfo.next_scanline < cinfo.image_height) {
-        rowPointer[0] = (JSAMPROW)(buffer + cinfo.next_scanline * bufferBytesPerRow);
+    int lines = 0;
+    while (lines < height) {
+        rowPointer[0] = (JSAMPROW)(buffer + lines * bufferBytesPerRow);
         jpeg_write_scanlines(&cinfo, rowPointer, 1);
     }
     
@@ -99,8 +100,7 @@ uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
     cinfo.err = jpeg_std_error(&jerr.pub);
     jpeg_create_compress(&cinfo);
     
-    uint8_t *outBuffer = NULL;
-    self->outBuffer = outBuffer;
+    self->outBuffer = NULL;
     self->outSize = 0;
     jpeg_mem_dest(&cinfo, &outBuffer, &self->outSize);
     
