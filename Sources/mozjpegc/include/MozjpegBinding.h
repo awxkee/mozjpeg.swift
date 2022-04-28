@@ -22,7 +22,7 @@ typedef struct my_error_mgr * my_error_ptr;
 @interface JPEGCompression : NSObject {
     struct jpeg_compress_struct cinfo;
     struct my_error_mgr jerr;
-    uint8_t width;
+    unsigned int width;
     uint8_t *outBuffer;
     unsigned long outSize;
 }

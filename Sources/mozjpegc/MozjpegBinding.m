@@ -81,6 +81,7 @@ uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
     uint8_t* buffer = createRGB8Buffer(sourceImage);
     if (width != self->width) {
         *error = [[NSError alloc] initWithDomain:@"JPEGCompression" code:500 userInfo:@{ NSLocalizedDescriptionKey: NSLocalizedString(@"`addEncoderImage due to invalid image sizes` failed", nil) }];
+        jpeg_destroy_compress(&cinfo);
         return nil;
     }
     int bufferBytesPerRow = ((3 * (int)width) + 31) & (~31);
