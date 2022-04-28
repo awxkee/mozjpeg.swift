@@ -25,6 +25,7 @@ typedef struct my_error_mgr * my_error_ptr;
     unsigned int width;
     uint8_t *outBuffer;
     unsigned long outSize;
+    bool compressStarted;
 }
 
 -(NSData * _Nonnull)finishCompress;

@@ -74,13 +74,33 @@ uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
 }
 
 @implementation JPEGCompression
+
+- (void)dealloc {
+    if (outBuffer != nil && compressStarted) {
+        [self finishCompress];
+    }
+}
+
+- (id) init
+{
+    self = [super init];
+    compressStarted = false;
+    outSize = 0;
+    outBuffer = nil;
+    return self;
+}
+
+
 - (NSData * _Nonnull)finishCompress {
-    
     jpeg_finish_compress(&cinfo);
-    
     NSData *result = [[NSData alloc] initWithBytes:outBuffer length:outSize];
-    
     jpeg_destroy_compress(&cinfo);
+    compressStarted = false;
+    if (outBuffer != NULL) {
+        free(outBuffer);
+    }
+    outBuffer = nil;
+    outSize = nil;
     return result;
 }
 
@@ -91,6 +111,12 @@ uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
     if (width != self->width) {
         *error = [[NSError alloc] initWithDomain:@"JPEGCompression" code:500 userInfo:@{ NSLocalizedDescriptionKey: NSLocalizedString(@"`addEncoderImage due to invalid image sizes` failed", nil) }];
         jpeg_destroy_compress(&cinfo);
+        compressStarted = false;
+        if (outBuffer != NULL) {
+            free(outBuffer);
+        }
+        outBuffer = nil;
+        outSize = nil;
         return nil;
     }
     int bufferBytesPerRow = ((3 * (int)width) + 31) & (~31);
@@ -107,6 +133,7 @@ uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
 }
 
 -(void) createCompress:(int)quality width:(int)width height:(int)height{
+    compressStarted = true;
     cinfo.err = jpeg_std_error(&jerr.pub);
     jpeg_create_compress(&cinfo);
     
@@ -140,14 +167,17 @@ NSData * _Nullable compressJPEGData(UIImage * _Nonnull sourceImage, int quality)
     
     struct jpeg_compress_struct cinfo;
     struct my_error_mgr jerr;
+    uint8_t *outBuffer = NULL;
     cinfo.err = jpeg_std_error(&jerr.pub);
     if (setjmp(jerr.setjmp_buffer)) {
         jpeg_destroy_compress(&cinfo);
+        if (outBuffer != NULL) {
+            free(outBuffer);
+        }
         return nil;
     }
     jpeg_create_compress(&cinfo);
     
-    uint8_t *outBuffer = NULL;
     unsigned long outSize = 0;
     jpeg_mem_dest(&cinfo, &outBuffer, &outSize);
     
@@ -176,6 +206,7 @@ NSData * _Nullable compressJPEGData(UIImage * _Nonnull sourceImage, int quality)
     
     jpeg_destroy_compress(&cinfo);
     
+    free(outBuffer);
     free(buffer);
     
     return result;
