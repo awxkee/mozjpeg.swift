@@ -117,6 +117,7 @@ uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
     jpeg_set_quality(&cinfo, quality, 1);
     jpeg_simple_progression(&cinfo);
     jpeg_start_compress(&cinfo, 1);
+    self->width = width;
     return nil;
 }
 
