@@ -69,14 +69,34 @@ unsigned char *BitmapFromCGImageAndIgnoreAlpha(CGImageRef imageRef) {
 NSData * _Nullable compressJPEGData(UIImage * _Nonnull sourceImage, int quality) {
     int width = (int)(sourceImage.size.width * sourceImage.scale);
     int height = (int)(sourceImage.size.height * sourceImage.scale);
-    
+
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGBitmapInfo bitmapInfo = kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Host;
+
+    int targetBytesPerRow = ((4 * (int)width) + 31) & (~31);
+    uint8_t *targetMemory = malloc((int)(targetBytesPerRow * height));
     int bufferBytesPerRow = ((3 * (int)width) + 31) & (~31);
-    
-    unsigned char* buffer = BitmapFromCGImageAndIgnoreAlpha(sourceImage.CGImage);
-    if (!buffer) {
-        return nil;
+    CGContextRef targetContext = CGBitmapContextCreate(targetMemory, width, height, 8, targetBytesPerRow, colorSpace, bitmapInfo);
+    uint8_t *buffer = malloc(bufferBytesPerRow * height);
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            uint32_t *color = ((uint32_t *)&targetMemory[y * targetBytesPerRow + x * 4]);
+
+            uint32_t r = ((*color >> 16) & 0xff);
+            uint32_t g = ((*color >> 8) & 0xff);
+            uint32_t b = (*color & 0xff);
+
+            buffer[y * bufferBytesPerRow + x * 3 + 0] = r;
+            buffer[y * bufferBytesPerRow + x * 3 + 1] = g;
+            buffer[y * bufferBytesPerRow + x * 3 + 2] = b;
+        }
     }
 
+    CGContextRelease(targetContext);
+
+    free(targetMemory);
+    
     struct jpeg_compress_struct cinfo;
     struct my_error_mgr jerr;
     cinfo.err = jpeg_std_error(&jerr.pub);
@@ -94,6 +114,7 @@ NSData * _Nullable compressJPEGData(UIImage * _Nonnull sourceImage, int quality)
     cinfo.image_height = (uint32_t)height;
     cinfo.input_components = 3;
     cinfo.in_color_space = JCS_RGB;
+    cinfo.jpeg_color_space = JCS_YCbCr;
     jpeg_c_set_int_param(&cinfo, JINT_COMPRESS_PROFILE, JCP_FASTEST);
     jpeg_set_defaults(&cinfo);
     cinfo.arith_code = FALSE;
