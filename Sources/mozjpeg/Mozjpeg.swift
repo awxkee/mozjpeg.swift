@@ -13,6 +13,23 @@ import mozjpegc
 
 public struct CannotCompressError: Error, Equatable { }
 
+public class MozjpegEncoder {
+    
+    private let compression = JPEGCompression()
+    
+    public init(image: UIImage, quality: Float) throws {
+        try compression.createCompress(image, quality: max(1, Int32(quality * 100)))
+    }
+    
+    public func addImage(image: UIImage, quality: Float) throws {
+        try compression.addEncoderImage(image, quality: max(1, Int32(quality * 100)))
+    }
+    
+    public func finish() -> Data {
+        return compression.finishCompress()
+    }
+}
+
 public extension UIImage {
     /**
      Compressed Image to Mozjpeg data
