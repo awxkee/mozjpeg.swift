@@ -92,7 +92,7 @@ uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
     }
     
     free(buffer);
-    return nil;
+    return @"ok";
 }
 
 -(void) createCompress:(int)quality width:(int)width height:(int)height{
