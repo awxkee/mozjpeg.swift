@@ -33,32 +33,41 @@ my_error_exit (j_common_ptr cinfo)
 uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
     int width = (int)(sourceImage.size.width * sourceImage.scale);
     int height = (int)(sourceImage.size.height * sourceImage.scale);
-
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    CGBitmapInfo bitmapInfo = kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Host;
-
     int targetBytesPerRow = ((4 * (int)width) + 31) & (~31);
     uint8_t *targetMemory = malloc((int)(targetBytesPerRow * height));
-    int bufferBytesPerRow = ((3 * (int)width) + 31) & (~31);
+    
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGBitmapInfo bitmapInfo = kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Host;
+    
     CGContextRef targetContext = CGBitmapContextCreate(targetMemory, width, height, 8, targetBytesPerRow, colorSpace, bitmapInfo);
+    
+    UIGraphicsPushContext(targetContext);
+    
+    CGColorSpaceRelease(colorSpace);
+    
+    CGContextDrawImage(targetContext, CGRectMake(0, 0, width, height), sourceImage.CGImage);
+    
+    UIGraphicsPopContext();
+    
+    int bufferBytesPerRow = ((3 * (int)width) + 31) & (~31);
     uint8_t *buffer = malloc(bufferBytesPerRow * height);
-
+    
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             uint32_t *color = ((uint32_t *)&targetMemory[y * targetBytesPerRow + x * 4]);
-
+            
             uint32_t r = ((*color >> 16) & 0xff);
             uint32_t g = ((*color >> 8) & 0xff);
             uint32_t b = (*color & 0xff);
-
+            
             buffer[y * bufferBytesPerRow + x * 3 + 0] = r;
             buffer[y * bufferBytesPerRow + x * 3 + 1] = g;
             buffer[y * bufferBytesPerRow + x * 3 + 2] = b;
         }
     }
-
+    
     CGContextRelease(targetContext);
-
+    
     free(targetMemory);
     
     return buffer;
