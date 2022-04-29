@@ -12,6 +12,11 @@ import mozjpegc
 #endif
 
 public struct CannotCompressError: Error, Equatable { }
+public struct InvalidJPEGDimensionsError: LocalizedError, Equatable {
+    public var errorDescription: String? {
+        "Image dimensions must be less than 65000"
+    }
+}
 
 public class MozjpegEncoder {
     
@@ -22,6 +27,9 @@ public class MozjpegEncoder {
     }
     
     public func createCompress(quality: Float, width: Int32, height: Int32) throws {
+        if width >= 65000 || height >= 65000 {
+            throw InvalidJPEGDimensionsError()
+        }
         compression.createCompress(max(1, Int32(quality * 100)), width: width, height: height)
     }
     

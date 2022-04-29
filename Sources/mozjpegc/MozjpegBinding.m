@@ -76,7 +76,7 @@ uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
 @implementation JPEGCompression
 
 - (void)dealloc {
-    if (outBuffer != nil && compressStarted) {
+    if (compressStarted) {
         [self finishCompress];
     }
 }
