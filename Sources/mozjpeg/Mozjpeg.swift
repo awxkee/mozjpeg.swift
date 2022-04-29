@@ -43,6 +43,26 @@ public class MozjpegEncoder {
 }
 
 public extension UIImage {
+    
+    /**
+     Compress **UIImage** with mozjpeg to file at *url*
+     - Throws **CannotCompressError**: if error occured while compressing
+     */
+    func mozjpegRepresentation(at url: URL, quality: Float) throws {
+        try mozjpegRepresentation(atPath: url.path, quality: quality)
+    }
+    
+    
+    /**
+     Compress **UIImage** with mozjpeg to file at *path*
+     - Throws **CannotCompressError**: if error occured while compressing
+     */
+    func mozjpegRepresentation(atPath path: String, quality: Float) throws {
+        if let error = compressJPEGData(path: path, image: self, quality: max(1, Int32(quality * 100))) {
+            throw error
+        }
+    }
+    
     /**
      Compressed Image to Mozjpeg data
      - Returns **Data**: final JPEG data

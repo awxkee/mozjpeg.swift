@@ -34,6 +34,7 @@ typedef struct my_error_mgr * my_error_ptr;
 -(void) createCompress:(int)quality width:(int)width height:(int)height;
 @end
 
+NSError* _Nullable compressJPEGDataTo(NSString* _Nonnull path, UIImage * _Nonnull sourceImage, int quality) NS_SWIFT_NAME(compressJPEGData(path:image:quality:));
 NSData * _Nullable compressJPEGData(UIImage * _Nonnull sourceImage, int quality) NS_SWIFT_NAME(compressMozjpeg(image:quality:));
 
 #endif /* MozjpegBinding_h */
