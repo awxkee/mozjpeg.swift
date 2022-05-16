@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  Mozjpeg.swift
 //  
 //
 //  Created by Radzivon Bartoshyk on 27/04/2022.
@@ -51,7 +51,6 @@ public extension UIImage {
     func mozjpegRepresentation(at url: URL, quality: Float) throws {
         try mozjpegRepresentation(atPath: url.path, quality: quality)
     }
-    
     
     /**
      Compress **UIImage** with mozjpeg to file at *path*

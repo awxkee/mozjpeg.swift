@@ -1,5 +1,5 @@
 import XCTest
-@testable import mozjpeg_swift
+@testable import mozjpeg
 
 final class mozjpeg_swiftTests: XCTestCase {
     func testExample() throws {

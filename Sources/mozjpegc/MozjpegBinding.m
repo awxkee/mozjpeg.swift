@@ -7,14 +7,19 @@
 
 #import <Foundation/Foundation.h>
 #import "MozjpegBinding.h"
-
-#import <jpeglib.h>
-
-#define JPEG_LIB_VERSION 80
+#import "jpeglib.h"
 
 /*
  * Here's the routine that will replace the standard error_exit method:
  */
+
+struct my_error_mgr {
+    struct jpeg_error_mgr pub;    /* "public" fields */
+    
+    jmp_buf setjmp_buffer;    /* for return to caller */
+};
+
+typedef struct my_error_mgr * my_error_ptr;
 
 METHODDEF(void)
 my_error_exit (j_common_ptr cinfo)
@@ -30,7 +35,7 @@ my_error_exit (j_common_ptr cinfo)
     longjmp(myerr->setjmp_buffer, 1);
 }
 
-uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
+uint8_t * createRGB8Buffer(MozjpegImage * _Nonnull sourceImage) {
     int width = (int)(sourceImage.size.width * sourceImage.scale);
     int height = (int)(sourceImage.size.height * sourceImage.scale);
     int targetBytesPerRow = ((4 * (int)width) + 31) & (~31);
@@ -73,7 +78,14 @@ uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
     return buffer;
 }
 
-@implementation JPEGCompression
+@implementation JPEGCompression {
+    struct jpeg_compress_struct cinfo;
+    struct my_error_mgr jerr;
+    unsigned int width;
+    uint8_t *outBuffer;
+    unsigned long outSize;
+    bool compressStarted;
+}
 
 - (void)dealloc {
     if (compressStarted) {
@@ -81,7 +93,7 @@ uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
     }
 }
 
-- (id) init
+- (id)init
 {
     self = [super init];
     compressStarted = false;
@@ -100,11 +112,11 @@ uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
         free(outBuffer);
     }
     outBuffer = nil;
-    outSize = nil;
+    outSize = 0;
     return result;
 }
 
--(void* _Nullable) addEncoderImage:(UIImage*_Nonnull)sourceImage error:(NSError *_Nullable*_Nullable)error {
+-(void* _Nullable) addEncoderImage:(MozjpegImage *_Nonnull)sourceImage error:(NSError *_Nullable*_Nullable)error {
     int width = (int)(sourceImage.size.width * sourceImage.scale);
     int height = (int)(sourceImage.size.height * sourceImage.scale);
     uint8_t* buffer = createRGB8Buffer(sourceImage);
@@ -116,7 +128,7 @@ uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
             free(outBuffer);
         }
         outBuffer = nil;
-        outSize = nil;
+        outSize = 0;
         return nil;
     }
     int bufferBytesPerRow = ((3 * (int)width) + 31) & (~31);
@@ -147,6 +159,8 @@ uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
     cinfo.in_color_space = JCS_RGB;
     jpeg_c_set_int_param(&cinfo, JINT_COMPRESS_PROFILE, JCP_FASTEST);
     jpeg_set_defaults(&cinfo);
+    cinfo.write_JFIF_header = true;
+    cinfo.write_Adobe_marker = true;
     cinfo.arith_code = FALSE;
     cinfo.dct_method = JDCT_ISLOW;
     cinfo.optimize_coding = TRUE;
@@ -154,7 +168,6 @@ uint8_t * createRGB8Buffer(UIImage * _Nonnull sourceImage) {
     jpeg_simple_progression(&cinfo);
     jpeg_start_compress(&cinfo, 1);
     self->width = width;
-    return nil;
 }
 
 @end
@@ -169,16 +182,17 @@ NSError* _Nullable compressJPEGDataTo(NSString* _Nonnull path, UIImage * _Nonnul
     struct my_error_mgr jerr;
     FILE * outfile = NULL;
     cinfo.err = jpeg_std_error(&jerr.pub);
+    jerr.pub.error_exit = my_error_exit;
     if (setjmp(jerr.setjmp_buffer)) {
         jpeg_destroy_compress(&cinfo);
         if (outfile) {
             fclose(outfile);
         }
-        return [[NSError alloc] initWithDomain:@"compressJPEGDataTo" code:500 userInfo:@{ NSLocalizedDescriptionKey: NSLocalizedString(@"`compressJPEGDataTo` failed", nil) }];;
+        return [[NSError alloc] initWithDomain:@"compressJPEGDataTo" code:500 userInfo:@{ NSLocalizedDescriptionKey: NSLocalizedString(@"`compressJPEGDataTo` failed", nil) }];
     }
     
     if ((outfile = fopen([path UTF8String], "wb")) == NULL) {
-        return [[NSError alloc] initWithDomain:@"compressJPEGDataTo" code:500 userInfo:@{ NSLocalizedDescriptionKey: NSLocalizedString(@"`can't open the file` failed", nil) }];;
+        return [[NSError alloc] initWithDomain:@"compressJPEGDataTo" code:500 userInfo:@{ NSLocalizedDescriptionKey: NSLocalizedString(@"`can't open the file` failed", nil) }];
     }
     
     jpeg_create_compress(&cinfo);
@@ -191,9 +205,12 @@ NSError* _Nullable compressJPEGDataTo(NSString* _Nonnull path, UIImage * _Nonnul
     cinfo.in_color_space = JCS_RGB;
     jpeg_c_set_int_param(&cinfo, JINT_COMPRESS_PROFILE, JCP_FASTEST);
     jpeg_set_defaults(&cinfo);
+    cinfo.write_JFIF_header = true;
+    cinfo.write_Adobe_marker = true;
     cinfo.arith_code = FALSE;
     cinfo.dct_method = JDCT_ISLOW;
     cinfo.optimize_coding = TRUE;
+    cinfo.jpeg_color_space = JCS_YCbCr;
     jpeg_set_quality(&cinfo, quality, 1);
     jpeg_simple_progression(&cinfo);
     jpeg_start_compress(&cinfo, 1);
@@ -213,7 +230,7 @@ NSError* _Nullable compressJPEGDataTo(NSString* _Nonnull path, UIImage * _Nonnul
 }
 
 
-NSData * _Nullable compressJPEGData(UIImage * _Nonnull sourceImage, int quality) {
+NSData * _Nullable compressJPEGData(MozjpegImage * _Nonnull sourceImage, int quality) {
     int width = (int)(sourceImage.size.width * sourceImage.scale);
     int height = (int)(sourceImage.size.height * sourceImage.scale);
     uint8_t* buffer = createRGB8Buffer(sourceImage);
@@ -223,6 +240,7 @@ NSData * _Nullable compressJPEGData(UIImage * _Nonnull sourceImage, int quality)
     struct my_error_mgr jerr;
     uint8_t *outBuffer = NULL;
     cinfo.err = jpeg_std_error(&jerr.pub);
+    jerr.pub.error_exit = my_error_exit;
     if (setjmp(jerr.setjmp_buffer)) {
         jpeg_destroy_compress(&cinfo);
         if (outBuffer != NULL) {
@@ -244,6 +262,9 @@ NSData * _Nullable compressJPEGData(UIImage * _Nonnull sourceImage, int quality)
     cinfo.arith_code = FALSE;
     cinfo.dct_method = JDCT_ISLOW;
     cinfo.optimize_coding = TRUE;
+    cinfo.write_JFIF_header = true;
+    cinfo.write_Adobe_marker = true;
+    cinfo.jpeg_color_space = JCS_YCbCr;
     jpeg_set_quality(&cinfo, quality, 1);
     jpeg_simple_progression(&cinfo);
     jpeg_start_compress(&cinfo, 1);
