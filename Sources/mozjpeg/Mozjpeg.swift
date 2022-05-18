@@ -6,7 +6,13 @@
 //
 
 import Foundation
+#if os(macOS)
+import AppKit
+public typealias MozjpegImage = NSImage
+#else
 import UIKit
+public typealias MozjpegImage = UIImage
+#endif
 #if SWIFT_PACKAGE
 import mozjpegc
 #endif
@@ -16,6 +22,15 @@ public struct InvalidJPEGDimensionsError: LocalizedError, Equatable {
     public var errorDescription: String? {
         "Image dimensions must be less than 65000"
     }
+}
+
+public class Mozjpeg {
+    private let _decompress = MozjpegDecompress()
+    
+    func decompress(chunk: Data) -> MozjpegImage? {
+        return _decompress.decompress(chunk)
+    }
+    
 }
 
 public class MozjpegEncoder {
@@ -33,7 +48,7 @@ public class MozjpegEncoder {
         compression.createCompress(max(1, Int32(quality * 100)), width: width, height: height)
     }
     
-    public func addImage(image: UIImage, quality: Float) throws {
+    public func addImage(image: MozjpegImage, quality: Float) throws {
         try compression.addEncoderImage(image)
     }
     
@@ -42,7 +57,7 @@ public class MozjpegEncoder {
     }
 }
 
-public extension UIImage {
+public extension MozjpegImage {
     
     /**
      Compress **UIImage** with mozjpeg to file at *url*
