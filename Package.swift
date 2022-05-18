@@ -30,6 +30,10 @@ let package = Package(
             name: "mozjpegc",
             dependencies: ["libturbojpeg"],
             path: "Sources/mozjpegc",
+            sources: [
+                "MozjpegBinding.m",
+                "MozjpegDecompress.mm"
+            ]
             publicHeadersPath: "include",
             cSettings: [
                 .headerSearchPath("."),
