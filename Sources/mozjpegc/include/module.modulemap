@@ -1,5 +1,4 @@
 module mozjpegc {
     umbrella header "MozjpegBinding.h"
-    header "MozjpegDecompress.hxx"
     export *
 }

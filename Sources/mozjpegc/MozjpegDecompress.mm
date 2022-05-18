@@ -5,7 +5,7 @@
 //  Created by Radzivon Bartoshyk on 18/05/2022.
 //
 
-#import "MozjpegDecompress.hxx"
+#import "MozjpegBinding.h"
 #import "turbojpeg.h"
 
 @implementation MozjpegDecompress {
