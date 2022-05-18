@@ -26,6 +26,10 @@ public struct InvalidJPEGDimensionsError: LocalizedError, Equatable {
 
 public class Mozjpeg {
     
+    public init() {
+        
+    }
+    
     private let _decompress = MozjpegDecompress()
     
     public func decompress(chunk: Data) -> MozjpegImage? {
