@@ -39,6 +39,7 @@
     tjtransform xform;
     memset(&xform, 0, sizeof(tjtransform));
     xform.options |= TJXOPT_PROGRESSIVE;
+    xform.options |= TJXOPT_TRIM;
     
     unsigned char *dstBuf = NULL;  /* Dynamically allocate the JPEG buffer */
     unsigned long dstSize = 0;
