@@ -35,8 +35,40 @@
 }
 
 
--(nullable NSData*)compress:(nonnull MozjpegImage*)image quality:(int)quality progressive:(bool)progressive useFastest:(bool)useFastest {
+-(nullable NSError*) compressTo:(nonnull NSURL*)url image:(nonnull MozjpegImage *)image quality:(int)quality progressive:(bool)progressive useFastest:(bool)useFastest {
+    CGImageRef imageRef = image.CGImage;
+    if (!imageRef) {
+        return [[NSError alloc] initWithDomain:@"MJEncoder" code:500 userInfo:@{ NSLocalizedDescriptionKey: @"Invalid image"}];
+    }
     
+    size_t width = CGImageGetWidth(imageRef);
+    size_t height = CGImageGetHeight(imageRef);
+    
+    auto buffer = [image mjRgbaPixels];
+    
+    const int pixelFormat = TJPF_RGBA;
+    
+    int flags = useFastest ? TJFLAG_FASTDCT : TJFLAG_ACCURATEDCT;
+    if (progressive) {
+        flags |= TJFLAG_PROGRESSIVE;
+    }
+    
+    auto filename = [[url path] UTF8String];
+    if (!filename) {
+        free(buffer);
+        return [[NSError alloc] initWithDomain:@"MJEncoder" code:500 userInfo:@{ NSLocalizedDescriptionKey: @"Filename is invalid"}];
+    }
+    
+    int result = tjSaveImage(filename, buffer, (int) width, 0, (int) height, pixelFormat, flags);
+    free(buffer);
+    if (result < 0) {
+        return [[NSError alloc] initWithDomain:@"MJEncoder" code:500 userInfo:@{ NSLocalizedDescriptionKey: [NSString stringWithFormat:@"JPEG encoding error with : %s", tjGetErrorStr2(tjInstance)]}];
+    }
+
+    return nil;
+}
+
+-(nullable NSData*)compress:(nonnull MozjpegImage*)image quality:(int)quality progressive:(bool)progressive useFastest:(bool)useFastest {
     CGImageRef imageRef = image.CGImage;
     if (!imageRef) {
         return nil;
@@ -68,7 +100,6 @@
     auto resultData = [[NSMutableData alloc] initWithBytes:jpegBuf length:jpegSize];
     tjFree(jpegBuf);
     return resultData;
-    
 }
 
 @end

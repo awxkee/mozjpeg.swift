@@ -6,7 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "MozjpegImage.h"
+#import "MozjpegImage.hxx"
 
 @interface MJDecompress : NSObject
 -(nonnull id)init;

@@ -5,7 +5,7 @@
 //  Created by Radzivon Bartoshyk on 19/05/2022.
 //
 
-#import <MozjpegImage.h>
+#import <MozjpegImage.hxx>
 
 @implementation MozjpegImage (MJImage)
 
@@ -28,14 +28,11 @@
     return rawData;
 }
 
-
-@end
-
-uint8_t * createRGB8Buffer(MozjpegImage * _Nonnull sourceImage) {
-    int width = (int)(sourceImage.size.width * sourceImage.scale);
-    int height = (int)(sourceImage.size.height * sourceImage.scale);
+-(nonnull uint8_t *) createRGB8Buffer {
+    int width = (int)(self.size.width * self.scale);
+    int height = (int)(self.size.height * self.scale);
     int targetBytesPerRow = ((4 * (int)width) + 31) & (~31);
-    uint8_t *targetMemory = malloc((int)(targetBytesPerRow * height));
+    uint8_t *targetMemory = static_cast<uint8_t*>(malloc((int)(targetBytesPerRow * height)));
     
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
     CGBitmapInfo bitmapInfo = kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Host;
@@ -46,12 +43,12 @@ uint8_t * createRGB8Buffer(MozjpegImage * _Nonnull sourceImage) {
     
     CGColorSpaceRelease(colorSpace);
     
-    CGContextDrawImage(targetContext, CGRectMake(0, 0, width, height), sourceImage.CGImage);
+    CGContextDrawImage(targetContext, CGRectMake(0, 0, width, height), self.CGImage);
     
     UIGraphicsPopContext();
     
     int bufferBytesPerRow = ((3 * (int)width) + 31) & (~31);
-    uint8_t *buffer = malloc(bufferBytesPerRow * height);
+    uint8_t *buffer = static_cast<uint8_t*>(malloc(bufferBytesPerRow * height));
     
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
@@ -73,3 +70,5 @@ uint8_t * createRGB8Buffer(MozjpegImage * _Nonnull sourceImage) {
     
     return buffer;
 }
+
+@end
