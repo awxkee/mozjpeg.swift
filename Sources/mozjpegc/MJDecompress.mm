@@ -51,7 +51,6 @@
             }
             return nil;
         }
-        return nil;
     }
     
     tjDestroy(tjTransformHandle);
