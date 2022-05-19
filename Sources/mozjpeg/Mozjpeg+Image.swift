@@ -25,7 +25,7 @@ public extension MozjpegImage {
      */
     func mozjpegRepresentation(at path: String, quality: Float) throws {
         let encoder = MJEncoder()
-        if let error = encoder.compress(to: url, image: self, quality: max(1, Int32(quality * 100)), progressive: true, useFastest: false) {
+        if let error = encoder.compress(to: path, image: self, quality: max(1, Int32(quality * 100)), progressive: true, useFastest: false) {
             throw error
         }
     }
