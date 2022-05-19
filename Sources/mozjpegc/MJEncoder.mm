@@ -48,9 +48,6 @@
     size_t bitsPerComponent = CGImageGetBitsPerComponent(imageRef);
     CGBitmapInfo bitmapInfo = CGImageGetBitmapInfo(imageRef);
     CGImageAlphaInfo alphaInfo = bitmapInfo & kCGBitmapAlphaInfoMask;
-    BOOL hasAlpha = !(alphaInfo == kCGImageAlphaNone ||
-                      alphaInfo == kCGImageAlphaNoneSkipFirst ||
-                      alphaInfo == kCGImageAlphaNoneSkipLast);
     
     vImageConverterRef convertor = NULL;
     vImage_Error v_error = kvImageNoError;
@@ -64,9 +61,9 @@
     };
     vImage_CGImageFormat destFormat = {
         .bitsPerComponent = 8,
-        .bitsPerPixel = hasAlpha ? 32 : 24,
+        .bitsPerPixel = 32,
         .colorSpace = CGColorSpaceCreateDeviceRGB(),
-        .bitmapInfo = hasAlpha ? kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Host : kCGImageAlphaNone | kCGBitmapByteOrder32Host // RGB/RGBA
+        .bitmapInfo = kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Host
     };
     
     convertor = vImageConverter_CreateWithCGImageFormat(&srcFormat, &destFormat, NULL, kvImageNoFlags, &v_error);
@@ -80,7 +77,7 @@
         return nil;
     }
     vImage_Buffer dest;
-    vImageBuffer_Init(&dest, height, width, hasAlpha ? 32 : 24, kvImageNoFlags);
+    vImageBuffer_Init(&dest, height, width, 32, kvImageNoFlags);
     if (!dest.data) {
         free(src.data);
         return nil;
@@ -97,12 +94,12 @@
         return nil;
     }
     
-    const int pixelFormat = hasAlpha ? TJPF_RGBA : TJPF_RGB;
+    const int pixelFormat = TJPF_RGBA;
     
     unsigned char* jpegBuf = nullptr;
     unsigned long jpegSize = 0;
     
-    int flags = useFastest ? TJFLAG_FASTDCT : TJFLAG_ACCURATEDCT;
+    int flags = /*useFastest ? TJFLAG_FASTDCT : TJFLAG_ACCURATEDCT*/ 0;
     if (progressive) {
         flags |= TJFLAG_PROGRESSIVE;
     }
