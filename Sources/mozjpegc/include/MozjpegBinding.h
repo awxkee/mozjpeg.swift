@@ -8,13 +8,8 @@
 #ifndef MozjpegBinding_h
 #define MozjpegBinding_h
 
+#import <Foundation/Foundation.h>
 #import "MozjpegImage.h"
-
-@interface MozjpegDecompress : NSObject
--(nonnull id)init;
--(nullable MozjpegImage*)decompress:(nonnull NSData*)chunk;
-@end
-
 
 @interface JPEGCompression : NSObject
 -(NSData * _Nonnull)finishCompress;

@@ -30,7 +30,7 @@ public class Mozjpeg {
         
     }
     
-    private let _decompress = MozjpegDecompress()
+    private let _decompress = MJDecompress()
     
     public func decompress(chunk: Data) -> MozjpegImage? {
         return _decompress.decompress(chunk)

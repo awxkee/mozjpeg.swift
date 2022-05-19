@@ -32,7 +32,7 @@ let package = Package(
             path: "Sources/mozjpegc",
             sources: [
                 "MozjpegBinding.m",
-                "MozjpegDecompress.mm"
+                "MJDecompress.mm"
             ],
             publicHeadersPath: "include",
             cSettings: [
