@@ -34,8 +34,28 @@
         //some error
         return nil;
     }
+    
+    auto tjTransformHandle = tjInitTransform();
+    tjtransform xform;
+    memset(&xform, 0, sizeof(tjtransform));
+    xform.options |= TJXOPT_PROGRESSIVE;
+    
+    unsigned char *dstBuf = NULL;  /* Dynamically allocate the JPEG buffer */
+    unsigned long dstSize = 0;
+    
+    if (tjTransform(tjTransformHandle, static_cast<const unsigned char *>(chunk.bytes), chunk.length, 1, &dstBuf, &dstSize,
+                    &xform, 0) < 0) {
+        if (dstBuf) {
+            tjFree(dstBuf);
+        }
+        return nil;
+    }
+    
+    tjDestroy(tjTransformHandle);
+    
     unsigned char* outputBuffer = reinterpret_cast<unsigned char*>(malloc(width * height * 4));
-    result = tjDecompress2(decompressPtr, static_cast<const unsigned char *>(chunk.bytes), chunk.length, outputBuffer, width, 0, height, TJPF_RGBA, TJFLAG_PROGRESSIVE);
+    result = tjDecompress2(decompressPtr, static_cast<const unsigned char *>(dstBuf), dstSize, outputBuffer, width, 0, height, TJPF_RGBA, TJFLAG_PROGRESSIVE);
+    tjFree(dstBuf);
     if (result) {
         if (tjGetErrorCode(decompressPtr) == TJERR_FATAL) {
             //some error
@@ -58,7 +78,7 @@
 #else
     image = [UIImage imageWithCGImage:imageRef scale:1 orientation: UIImageOrientationUp];
 #endif
-
+    
     CGImageRelease(imageRef);
     CGColorSpaceRelease(colorSpace);
     
