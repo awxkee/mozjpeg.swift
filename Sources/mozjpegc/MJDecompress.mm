@@ -24,6 +24,21 @@
     decompressPtr = NULL;
 }
 
++(BOOL)isJpeg:(nonnull NSData*)chunk {
+    auto decompressPtr = tjInitDecompress();
+    int width = 0;
+    int height = 0;
+    int jpegSubsample = 0;
+    int jpegColorspace = 0;
+    int result = tjDecompressHeader3(decompressPtr, (unsigned char *)chunk.bytes, chunk.length, &width, &height, &jpegSubsample, &jpegColorspace);
+    tjDestroy(decompressPtr);
+    if (result) {
+        //some error
+        return false;
+    }
+    return true;;
+}
+
 -(nullable MozjpegImage*)decompress:(nonnull NSData*)chunk {
     int width = 0;
     int height = 0;

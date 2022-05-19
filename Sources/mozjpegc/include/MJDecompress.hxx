@@ -11,4 +11,5 @@
 @interface MJDecompress : NSObject
 -(nonnull id)init;
 -(nullable MozjpegImage*)decompress:(nonnull NSData*)chunk;
++(BOOL)isJpeg:(nonnull NSData*)chunk;
 @end
