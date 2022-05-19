@@ -46,7 +46,7 @@
     
     if (tjTransform(tjTransformHandle, static_cast<const unsigned char *>(chunk.bytes), chunk.length, 1, &dstBuf, &dstSize,
                     &xform, 0) < 0) {
-        if (tjGetErrorCode(decompressPtr) == TJERR_FATAL) {
+        if (tjGetErrorCode(tjTransformHandle) == TJERR_FATAL) {
             if (dstBuf) {
                 tjFree(dstBuf);
             }
