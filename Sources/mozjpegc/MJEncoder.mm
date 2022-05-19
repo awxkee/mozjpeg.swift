@@ -63,7 +63,7 @@
         .bitsPerComponent = 8,
         .bitsPerPixel = 32,
         .colorSpace = CGColorSpaceCreateDeviceRGB(),
-        .bitmapInfo = kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Host
+        .bitmapInfo = kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Host
     };
     
     convertor = vImageConverter_CreateWithCGImageFormat(&srcFormat, &destFormat, NULL, kvImageNoFlags, &v_error);
@@ -94,7 +94,7 @@
         return nil;
     }
     
-    const int pixelFormat = TJPF_RGBA;
+    const int pixelFormat = TJPF_ARGB;
     
     unsigned char* jpegBuf = nullptr;
     unsigned long jpegSize = 0;
