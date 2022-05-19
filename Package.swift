@@ -33,7 +33,8 @@ let package = Package(
             sources: [
                 "MozjpegBinding.m",
                 "MJDecompress.mm",
-                "MJEncoder.mm"
+                "MJEncoder.mm",
+                "MozjpegImage.m"
             ], publicHeadersPath: "include",
             cSettings: [
                 .headerSearchPath("."),

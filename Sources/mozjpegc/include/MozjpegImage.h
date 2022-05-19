@@ -14,3 +14,9 @@
 #import <UIKit/UIKit.h>
 #define MozjpegImage   UIImage
 #endif
+
+@interface MozjpegImage (MJImage)
+- (nonnull unsigned char *)mjRgbaPixels;
+@end
+
+uint8_t * _Nonnull createRGB8Buffer(MozjpegImage * _Nonnull sourceImage);
