@@ -66,7 +66,7 @@
         .bitsPerComponent = 8,
         .bitsPerPixel = hasAlpha ? 32 : 24,
         .colorSpace = [MJEncoder colorSpaceGetDeviceRGB],
-        .bitmapInfo = hasAlpha ? kCGImageAlphaLast | kCGBitmapByteOrderDefault : kCGImageAlphaNone | kCGBitmapByteOrderDefault // RGB/RGBA
+        .bitmapInfo = hasAlpha ? kCGImageAlphaLast | kCGBitmapByteOrder32Host : kCGImageAlphaNone | kCGBitmapByteOrder32Host // RGB/RGBA
     };
     
     convertor = vImageConverter_CreateWithCGImageFormat(&srcFormat, &destFormat, NULL, kvImageNoFlags, &v_error);
