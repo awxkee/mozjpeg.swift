@@ -35,7 +35,7 @@
 }
 
 
--(nullable NSError*) compressTo:(nonnull NSURL*)url image:(nonnull MozjpegImage *)image quality:(int)quality progressive:(bool)progressive useFastest:(bool)useFastest {
+-(nullable NSError*) compressTo:(nonnull NSString*)path image:(nonnull MozjpegImage *)image quality:(int)quality progressive:(bool)progressive useFastest:(bool)useFastest {
     CGImageRef imageRef = image.CGImage;
     if (!imageRef) {
         return [[NSError alloc] initWithDomain:@"MJEncoder" code:500 userInfo:@{ NSLocalizedDescriptionKey: @"Invalid image"}];
@@ -53,7 +53,7 @@
         flags |= TJFLAG_PROGRESSIVE;
     }
     
-    auto filename = [[url path] UTF8String];
+    auto filename = [path UTF8String];
     if (!filename) {
         free(buffer);
         return [[NSError alloc] initWithDomain:@"MJEncoder" code:500 userInfo:@{ NSLocalizedDescriptionKey: @"Filename is invalid"}];
