@@ -11,6 +11,6 @@
 @interface MJEncoder : NSObject
 -(nonnull id)init;
 -(nullable NSData*)compress:(nonnull MozjpegImage*)image quality:(int)quality progressive:(bool)progressive useFastest:(bool)useFastest;
--(nullable NSError*) compressTo:(nonnull NSString*)path image:(nonnull MozjpegImage *)image quality:(int)quality progressive:(bool)progressive useFastest:(bool)useFastest;
+-(nullable NSError*) compressTo:(nonnull NSURL*)url image:(nonnull MozjpegImage *)image quality:(int)quality progressive:(bool)progressive useFastest:(bool)useFastest;
 @end
 

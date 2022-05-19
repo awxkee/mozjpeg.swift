@@ -23,9 +23,9 @@ public extension MozjpegImage {
      Compress **UIImage** with mozjpeg to file at *url*
      - Throws **CannotCompressError**: if error occured while compressing
      */
-    func mozjpegRepresentation(at path: String, quality: Float) throws {
+    func mozjpegRepresentation(at url: URL, quality: Float) throws {
         let encoder = MJEncoder()
-        if let error = encoder.compress(to: path, image: self, quality: max(1, Int32(quality * 100)), progressive: true, useFastest: false) {
+        if let error = encoder.compress(to: url, image: self, quality: max(1, Int32(quality * 100)), progressive: true, useFastest: false) {
             throw error
         }
     }
