@@ -35,7 +35,7 @@
         return nil;
     }
     unsigned char* outputBuffer = reinterpret_cast<unsigned char*>(malloc(width * height * 4));
-    result = tjDecompress2(decompressPtr, static_cast<const unsigned char *>(chunk.bytes), chunk.length, outputBuffer, width, 0, height, TJPF_RGBA, 0);
+    result = tjDecompress2(decompressPtr, static_cast<const unsigned char *>(chunk.bytes), chunk.length, outputBuffer, width, 0, height, TJPF_RGBA, TJFLAG_PROGRESSIVE);
     if (result) {
         //some error
         free(outputBuffer);
