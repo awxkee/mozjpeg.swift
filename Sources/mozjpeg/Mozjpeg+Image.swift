@@ -43,9 +43,15 @@ public extension MozjpegImage {
      - Throws **CannotCompressError**: if error occured while compressing
      */
     func mozjpegRepresentation(quality: Float) throws -> Data {
-        guard let data = compressMozjpeg(image: self, quality: max(1, Int32(quality * 100))) else {
+        let encoder = MJEncoder()
+        guard let data = encoder.compress(self, quality: max(1, Int32(quality * 100)), progressive: true, useFastest: false) else {
             throw CannotCompressError()
         }
+        
         return data
+//        guard let data = compressMozjpeg(image: self, quality: max(1, Int32(quality * 100))) else {
+//            throw CannotCompressError()
+//        }
+//        return data
     }
 }

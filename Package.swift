@@ -32,12 +32,13 @@ let package = Package(
             path: "Sources/mozjpegc",
             sources: [
                 "MozjpegBinding.m",
-                "MJDecompress.mm"
-            ],
-            publicHeadersPath: "include",
+                "MJDecompress.mm",
+                "MJEncoder.mm"
+            ], publicHeadersPath: "include",
             cSettings: [
                 .headerSearchPath("."),
-            ]),
+            ],
+            linkerSettings: [.linkedFramework("Accelerate")]),
         .binaryTarget(name: "libturbojpeg", path: "Sources/libturbojpeg.xcframework"),
         .testTarget(
             name: "mozjpeg.swiftTests",
