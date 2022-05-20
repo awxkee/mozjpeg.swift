@@ -115,7 +115,7 @@ my_error_exit (j_common_ptr cinfo)
     cinfo.image_width = (uint32_t)width;
     cinfo.image_height = (uint32_t)height;
     cinfo.input_components = 3;
-    cinfo.in_color_space = JCS_EXT_RGBA;
+    cinfo.in_color_space = JCS_RGB;
     jpeg_c_set_int_param(&cinfo, JINT_COMPRESS_PROFILE, JCP_FASTEST);
     jpeg_set_defaults(&cinfo);
     cinfo.write_JFIF_header = true;
