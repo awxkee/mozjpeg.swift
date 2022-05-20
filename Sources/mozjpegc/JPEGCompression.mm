@@ -78,7 +78,7 @@ my_error_exit (j_common_ptr cinfo)
 -(void* _Nullable) addEncoderImage:(MozjpegImage *_Nonnull)sourceImage error:(NSError *_Nullable*_Nullable)error {
     int width = [sourceImage mjIntrinsicWidth];
     int height = [sourceImage mjIntrinsicHeight];
-    uint8_t* buffer = [sourceImage mjRgbaPixels];
+    uint8_t* buffer = [sourceImage createRGB8Buffer];
     if (width != self->width) {
         *error = [[NSError alloc] initWithDomain:@"JPEGCompression" code:500 userInfo:@{ NSLocalizedDescriptionKey: NSLocalizedString(@"`addEncoderImage due to invalid image sizes` failed", nil) }];
         jpeg_destroy_compress(&cinfo);
