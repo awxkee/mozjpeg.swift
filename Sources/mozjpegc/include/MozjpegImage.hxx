@@ -18,6 +18,9 @@
 @interface MozjpegImage (MJImage)
 - (nonnull unsigned char *)mjRgbaPixels;
 - (nonnull uint8_t *) createRGB8Buffer;
+-(int)mjIntrinsicWidth;
+-(int)mjIntrinsicHeight;
+-(nullable CGImageRef)makeCGImage;
 @end
 
 uint8_t * _Nonnull createRGB8Buffer(MozjpegImage * _Nonnull sourceImage);

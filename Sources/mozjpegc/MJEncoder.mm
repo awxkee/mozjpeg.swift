@@ -25,16 +25,6 @@
     tjInstance = nullptr;
 }
 
-+ (CGColorSpaceRef)colorSpaceGetDeviceRGB {
-    static CGColorSpaceRef colorSpace;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
-    });
-    return colorSpace;
-}
-
-
 -(nullable NSError*) compressTo:(nonnull NSURL*)url image:(nonnull MozjpegImage *)image quality:(int)quality progressive:(bool)progressive useFastest:(bool)useFastest {
     
     auto jpegData = [self compress:image quality:quality progressive:progressive useFastest:useFastest];
@@ -50,7 +40,7 @@
 }
 
 -(nullable NSData*)compress:(nonnull MozjpegImage*)image quality:(int)quality progressive:(bool)progressive useFastest:(bool)useFastest {
-    CGImageRef imageRef = image.CGImage;
+    CGImageRef imageRef = [image makeCGImage];
     if (!imageRef) {
         return nil;
     }

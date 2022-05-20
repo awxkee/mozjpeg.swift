@@ -9,6 +9,7 @@
 #import "JPEGCompression.hxx"
 #import "jpeglib.h"
 #import "turbojpeg.h"
+#import "MozjpegImage.hxx"
 
 /*
  * Here's the routine that will replace the standard error_exit method:
@@ -75,8 +76,8 @@ my_error_exit (j_common_ptr cinfo)
 }
 
 -(void* _Nullable) addEncoderImage:(MozjpegImage *_Nonnull)sourceImage error:(NSError *_Nullable*_Nullable)error {
-    int width = (int)(sourceImage.size.width * sourceImage.scale);
-    int height = (int)(sourceImage.size.height * sourceImage.scale);
+    int width = [sourceImage mjIntrinsicWidth];
+    int height = [sourceImage mjIntrinsicHeight];
     uint8_t* buffer = [sourceImage createRGB8Buffer];
     if (width != self->width) {
         *error = [[NSError alloc] initWithDomain:@"JPEGCompression" code:500 userInfo:@{ NSLocalizedDescriptionKey: NSLocalizedString(@"`addEncoderImage due to invalid image sizes` failed", nil) }];
