@@ -6,6 +6,7 @@
 //
 
 #import <MozjpegImage.hxx>
+#import <Accelerate/Accelerate.h>>
 
 @implementation MozjpegImage (MJImage)
 #if TARGET_OS_OSX
@@ -25,6 +26,14 @@
     CGColorSpaceRelease(colorSpace);
     
     CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
+    
+    auto unpremultiplied = [MozjpegImage mjUnpremultiplyRGBA:imageRef];
+    if (unpremultiplied) {
+        free(rawData);
+        rawData = unpremultiplied;
+    }
+    
+    CGColorSpaceRelease(colorSpace);
     CGContextRelease(context);
     return rawData;
 }
@@ -107,6 +116,14 @@
     CGColorSpaceRelease(colorSpace);
     
     CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
+    
+    auto unpremultiplied = [MozjpegImage mjUnpremultiplyRGBA:imageRef];
+    if (unpremultiplied) {
+        free(rawData);
+        rawData = unpremultiplied;
+    }
+    
+    CGColorSpaceRelease(colorSpace);
     CGContextRelease(context);
     return rawData;
 }
@@ -162,5 +179,44 @@
 }
 
 #endif
+
++(unsigned char*)mjUnpremultiplyRGBA:(CGImageRef)cgNewImageRef {
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    vImage_Buffer src;
+    void* result = nullptr;
+    vImage_CGImageFormat srcFormat = {
+          .bitsPerComponent = (uint32_t)CGImageGetBitsPerComponent(cgNewImageRef),
+          .bitsPerPixel = (uint32_t)CGImageGetBitsPerPixel(cgNewImageRef),
+          .colorSpace = colorSpace,
+          .bitmapInfo = kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big,
+          .renderingIntent = kCGRenderingIntentDefault
+      };
+    auto vEerror = vImageBuffer_InitWithCGImage(&src, &srcFormat, NULL, cgNewImageRef, kvImageNoFlags);
+    if (vEerror != kvImageNoError) {
+        free(src.data);
+        CGColorSpaceRelease(colorSpace);
+        return nullptr;
+    }
+    
+    vImage_Buffer dest = {
+        .data = malloc(CGImageGetWidth(cgNewImageRef) * CGImageGetHeight(cgNewImageRef) * 4),
+        .width = CGImageGetWidth(cgNewImageRef),
+        .height = CGImageGetHeight(cgNewImageRef),
+        .rowBytes = CGImageGetWidth(cgNewImageRef) * 4
+    };
+    vEerror = vImageUnpremultiplyData_RGBA8888(&src, &dest, kvImageNoFlags);
+    if (vEerror != kvImageNoError) {
+        free(src.data);
+        free(dest.data);
+        CGColorSpaceRelease(colorSpace);
+        return nullptr;
+    }
+    result = dest.data;
+    
+    free(src.data);
+    CGColorSpaceRelease(colorSpace);
+    return reinterpret_cast<unsigned char*>(result);
+}
+
 
 @end

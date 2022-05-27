@@ -68,8 +68,10 @@
         return nil;
     }
     
-    auto resultData = [[NSMutableData alloc] initWithBytes:jpegBuf length:jpegSize];
-    tjFree(jpegBuf);
+    auto resultData = [[NSMutableData alloc] initWithBytesNoCopy:jpegBuf length:jpegSize deallocator:^(void * _Nonnull bytes, NSUInteger length) {
+        tjFree((unsigned char *)bytes);
+    }];
+
     return resultData;
 }
 
