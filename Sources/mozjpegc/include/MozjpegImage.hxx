@@ -16,7 +16,7 @@
 #endif
 
 @interface MozjpegImage (MJImage)
-- (nonnull unsigned char *)mjRgbaPixels;
+- (nonnull unsigned char *)mjRgbaPixels:(bool)premultiply;
 - (nonnull uint8_t *) createRGB8Buffer;
 -(int)mjIntrinsicWidth;
 -(int)mjIntrinsicHeight;

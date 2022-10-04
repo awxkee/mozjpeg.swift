@@ -25,9 +25,9 @@
     tjInstance = nullptr;
 }
 
--(nullable NSError*) compressTo:(nonnull NSURL*)url image:(nonnull MozjpegImage *)image quality:(int)quality progressive:(bool)progressive useFastest:(bool)useFastest {
+-(nullable NSError*) compressTo:(nonnull NSURL*)url image:(nonnull MozjpegImage *)image quality:(int)quality progressive:(bool)progressive useFastest:(bool)useFastest premultiply:(bool)premultiply {
     
-    auto jpegData = [self compress:image quality:quality progressive:progressive useFastest:useFastest];
+    auto jpegData = [self compress:image quality:quality progressive:progressive useFastest:useFastest premultiply:premultiply];
     if (!jpegData) {
         return [[NSError alloc] initWithDomain:@"MJEncoder" code:500 userInfo:@{ NSLocalizedDescriptionKey: @"Can't encode image" }];
     }
@@ -39,7 +39,7 @@
     return nil;
 }
 
--(nullable NSData*)compress:(nonnull MozjpegImage*)image quality:(int)quality progressive:(bool)progressive useFastest:(bool)useFastest {
+-(nullable NSData*)compress:(nonnull MozjpegImage*)image quality:(int)quality progressive:(bool)progressive useFastest:(bool)useFastest premultiply:(bool)premultiply {
     CGImageRef imageRef = [image makeCGImage];
     if (!imageRef) {
         return nil;
@@ -48,7 +48,7 @@
     size_t width = CGImageGetWidth(imageRef);
     size_t height = CGImageGetHeight(imageRef);
     
-    auto buffer = [image mjRgbaPixels];
+    auto buffer = [image mjRgbaPixels:premultiply];
     
     const int pixelFormat = TJPF_RGBA;
     
@@ -60,7 +60,14 @@
         flags |= TJFLAG_PROGRESSIVE;
     }
     
-    int result = tjCompress2(tjInstance, static_cast<const unsigned char *>(buffer), static_cast<int>(width), 0, static_cast<int>(height), pixelFormat, &jpegBuf, &jpegSize, TJSAMP_420, quality, flags);
+    int result = tjCompress2(tjInstance,
+                             static_cast<const unsigned char *>(buffer),
+                             static_cast<int>(width),
+                             0,
+                             static_cast<int>(height),
+                             pixelFormat,
+                             &jpegBuf, &jpegSize,
+                             TJSAMP_420, quality, flags);
     free(buffer);
     if (result < 0) {
         NSLog(@"%@", [NSString stringWithFormat:@"JPEG encoding error with : %s", tjGetErrorStr2(tjInstance)]);

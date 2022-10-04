@@ -6,17 +6,17 @@
 //
 
 #import <MozjpegImage.hxx>
-#import <Accelerate/Accelerate.h>>
+#import <Accelerate/Accelerate.h>
 
 @implementation MozjpegImage (MJImage)
 #if TARGET_OS_OSX
-- (unsigned char *)mjRgbaPixels {
+- (unsigned char *)mjRgbaPixels:(bool)premultiply {
     auto rect = NSMakeRect(0, 0, self.size.width, self.size.height);
     CGImageRef imageRef = [self CGImageForProposedRect: &rect context:nil hints:nil];
     NSUInteger width = CGImageGetWidth(imageRef);
     NSUInteger height = CGImageGetHeight(imageRef);
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    unsigned char *rawData = (unsigned char*) calloc(height * width * 4, sizeof(unsigned char));
+    unsigned char *rawData = (unsigned char*) malloc(height * width * 4 * sizeof(unsigned char));
     NSUInteger bytesPerPixel = 4;
     NSUInteger bytesPerRow = bytesPerPixel * width;
     NSUInteger bitsPerComponent = 8;
@@ -27,13 +27,15 @@
     CGContextSetFillColorWithColor(context, [[NSColor whiteColor] CGColor]);
     CGContextFillRect(context, CGRectMake(0, 0, width, height));
     CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
-    
-    auto unpremultiplied = [MozjpegImage mjUnpremultiplyRGBA:imageRef];
-    if (unpremultiplied) {
-        free(rawData);
-        rawData = unpremultiplied;
+
+    if (premultiply) {
+        auto unpremultiplied = [MozjpegImage mjUnpremultiplyRGBA:imageRef];
+        if (unpremultiplied) {
+            free(rawData);
+            rawData = unpremultiplied;
+        }
     }
-    
+
     CGColorSpaceRelease(colorSpace);
     CGContextRelease(context);
     return rawData;
@@ -60,7 +62,10 @@
     [NSGraphicsContext setCurrentContext: [NSGraphicsContext graphicsContextWithCGContext:targetContext flipped:FALSE]];
     CGColorSpaceRelease(colorSpace);
     
-    [self drawInRect:NSMakeRect(0, 0, self.mjIntrinsicWidth, self.mjIntrinsicHeight) fromRect:NSZeroRect operation:NSCompositeCopy fraction:1.0];
+    [self drawInRect: NSMakeRect(0, 0, self.mjIntrinsicWidth, self.mjIntrinsicHeight)
+            fromRect: NSZeroRect
+           operation: NSCompositingOperationCopy
+            fraction: 1.0];
     
     [NSGraphicsContext restoreGraphicsState];
 
@@ -102,12 +107,12 @@
     return [self CGImage];
 }
 
-- (unsigned char *)mjRgbaPixels {
+- (unsigned char *)mjRgbaPixels:(bool)premultiply {
     CGImageRef imageRef = [self makeCGImage];
     NSUInteger width = CGImageGetWidth(imageRef);
     NSUInteger height = CGImageGetHeight(imageRef);
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    unsigned char *rawData = (unsigned char*) calloc(height * width * 4, sizeof(unsigned char));
+    unsigned char *rawData = (unsigned char*) malloc(height * width * 4 * sizeof(unsigned char));
     NSUInteger bytesPerPixel = 4;
     NSUInteger bytesPerRow = bytesPerPixel * width;
     NSUInteger bitsPerComponent = 8;
@@ -118,11 +123,13 @@
     CGContextSetFillColorWithColor(context, [[UIColor whiteColor] CGColor]);
     CGContextFillRect(context, CGRectMake(0, 0, width, height));
     CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
-    
-    auto unpremultiplied = [MozjpegImage mjUnpremultiplyRGBA:imageRef];
-    if (unpremultiplied) {
-        free(rawData);
-        rawData = unpremultiplied;
+
+    if (premultiply) {
+        auto unpremultiplied = [MozjpegImage mjUnpremultiplyRGBA:imageRef];
+        if (unpremultiplied) {
+            free(rawData);
+            rawData = unpremultiplied;
+        }
     }
     
     CGColorSpaceRelease(colorSpace);
@@ -187,12 +194,12 @@
     vImage_Buffer src;
     void* result = nullptr;
     vImage_CGImageFormat srcFormat = {
-          .bitsPerComponent = (uint32_t)CGImageGetBitsPerComponent(cgNewImageRef),
-          .bitsPerPixel = (uint32_t)CGImageGetBitsPerPixel(cgNewImageRef),
-          .colorSpace = colorSpace,
-          .bitmapInfo = kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big,
-          .renderingIntent = kCGRenderingIntentDefault
-      };
+        .bitsPerComponent = (uint32_t)CGImageGetBitsPerComponent(cgNewImageRef),
+        .bitsPerPixel = (uint32_t)CGImageGetBitsPerPixel(cgNewImageRef),
+        .colorSpace = colorSpace,
+        .bitmapInfo = kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big,
+        .renderingIntent = kCGRenderingIntentDefault
+    };
     auto vEerror = vImageBuffer_InitWithCGImage(&src, &srcFormat, NULL, cgNewImageRef, kvImageNoFlags);
     if (vEerror != kvImageNoError) {
         free(src.data);

@@ -23,9 +23,11 @@ public extension MozjpegImage {
      Compress **UIImage** with mozjpeg to file at *url*
      - Throws **CannotCompressError**: if error occured while compressing
      */
-    func mozjpegRepresentation(at url: URL, quality: Float) throws {
+    func mozjpegRepresentation(at url: URL, quality: Float, progressive: Bool = true,
+                               useFastestDCT: Bool = false, premultiply: Bool = true) throws {
         let encoder = MJEncoder()
-        if let error = encoder.compress(to: url, image: self, quality: max(1, Int32(quality * 100)), progressive: true, useFastest: false) {
+        if let error = encoder.compress(to: url, image: self, quality: max(1, Int32(quality * 100)),
+                                        progressive: progressive, useFastest: useFastestDCT, premultiply: premultiply) {
             throw error
         }
     }
@@ -35,9 +37,12 @@ public extension MozjpegImage {
      - Returns **Data**: final JPEG data
      - Throws **CannotCompressError**: if error occured while compressing
      */
-    func mozjpegRepresentation(quality: Float) throws -> Data {
+    func mozjpegRepresentation(quality: Float, progressive: Bool = true,
+                               useFastestDCT: Bool = false, premultiply: Bool = true) throws -> Data {
         let encoder = MJEncoder()
-        guard let data = encoder.compress(self, quality: max(1, Int32(quality * 100)), progressive: true, useFastest: false) else {
+        guard let data = encoder.compress(self, quality: max(1, Int32(quality * 100)),
+                                          progressive: progressive, useFastest: useFastestDCT,
+                                          premultiply: premultiply) else {
             throw CannotCompressError()
         }
         
