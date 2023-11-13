@@ -38,7 +38,7 @@ bool mjUnpremultiplyRGBA(vector<uint8_t>& buffer, int width, int height) {
     buffer.resize(bytesPerRow * height);
     CGContextRef context = CGBitmapContextCreate(buffer.data(), width, height,
                                                  bitsPerComponent, bytesPerRow, colorSpace,
-                                                 kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Host);
+                                                 kCGImageAlphaPremultipliedLast | kCGImageByteOrderDefault);
     CGColorSpaceRelease(colorSpace);
     CGContextSetFillColorWithColor(context, [[NSColor whiteColor] CGColor]);
     CGContextFillRect(context, CGRectMake(0, 0, width, height));
@@ -128,7 +128,7 @@ bool mjUnpremultiplyRGBA(vector<uint8_t>& buffer, int width, int height) {
     buffer.resize(bytesPerRow * height);
     CGContextRef context = CGBitmapContextCreate(buffer.data(), width, height,
                                                  bitsPerComponent, bytesPerRow, colorSpace,
-                                                 kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Host);
+                                                 kCGImageAlphaPremultipliedLast | kCGImageByteOrderDefault);
     CGContextSetFillColorWithColor(context, [[UIColor whiteColor] CGColor]);
     CGContextFillRect(context, CGRectMake(0, 0, width, height));
     CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);

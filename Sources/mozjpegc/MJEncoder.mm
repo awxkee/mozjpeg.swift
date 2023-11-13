@@ -63,8 +63,7 @@ using namespace std;
             return nil;
         }
 
-        bool isBigEndian = htonl(47) == 47;
-        const int pixelFormat = isBigEndian ? TJPF_RGBA : TJPF_ABGR;
+        const TJPF pixelFormat = TJPF_RGBA;
 
         unsigned char* jpegBuf = nullptr;
         unsigned long jpegSize = 0;
