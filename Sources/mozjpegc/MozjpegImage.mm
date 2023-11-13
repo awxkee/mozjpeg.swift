@@ -13,9 +13,9 @@ using namespace std;
 bool mjUnpremultiplyRGBA(vector<uint8_t>& buffer, int width, int height) {
     vImage_Buffer inPlace = {
         .data = buffer.data(),
-        .width = width,
-        .height = height,
-        .rowBytes = width * 4 * sizeof(uint8_t)
+        .width = static_cast<vImagePixelCount>(width),
+        .height = static_cast<vImagePixelCount>(height),
+        .rowBytes = static_cast<size_t>(width * 4 * sizeof(uint8_t))
     };
     auto vEerror = vImageUnpremultiplyData_RGBA8888(&inPlace, &inPlace, kvImageNoFlags);
     if (vEerror != kvImageNoError) {
