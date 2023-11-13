@@ -8,37 +8,47 @@
 #import <MozjpegImage.hxx>
 #import <Accelerate/Accelerate.h>
 
+using namespace std;
+
+bool mjUnpremultiplyRGBA(vector<uint8_t>& buffer, int width, int height) {
+    vImage_Buffer inPlace = {
+        .data = buffer.data(),
+        .width = width,
+        .height = height,
+        .rowBytes = width * 4 * sizeof(uint8_t)
+    };
+    auto vEerror = vImageUnpremultiplyData_RGBA8888(&inPlace, &inPlace, kvImageNoFlags);
+    if (vEerror != kvImageNoError) {
+        return false;
+    }
+    return true;
+}
+
 @implementation MozjpegImage (MJImage)
 #if TARGET_OS_OSX
-- (unsigned char *)mjRgbaPixels:(bool)premultiply {
+- (bool)mjRgbaPixels:(vector<uint8_t>&)buffer {
     auto rect = NSMakeRect(0, 0, self.size.width, self.size.height);
     CGImageRef imageRef = [self CGImageForProposedRect: &rect context:nil hints:nil];
     NSUInteger width = CGImageGetWidth(imageRef);
     NSUInteger height = CGImageGetHeight(imageRef);
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    unsigned char *rawData = (unsigned char*) malloc(height * width * 4 * sizeof(unsigned char));
     NSUInteger bytesPerPixel = 4;
     NSUInteger bytesPerRow = bytesPerPixel * width;
     NSUInteger bitsPerComponent = 8;
-    CGContextRef context = CGBitmapContextCreate(rawData, width, height,
+    buffer.resize(bytesPerRow * height);
+    CGContextRef context = CGBitmapContextCreate(buffer.data(), width, height,
                                                  bitsPerComponent, bytesPerRow, colorSpace,
-                                                 kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+                                                 kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Host);
     CGColorSpaceRelease(colorSpace);
     CGContextSetFillColorWithColor(context, [[NSColor whiteColor] CGColor]);
     CGContextFillRect(context, CGRectMake(0, 0, width, height));
     CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
 
-    if (premultiply) {
-        auto unpremultiplied = [MozjpegImage mjUnpremultiplyRGBA:imageRef];
-        if (unpremultiplied) {
-            free(rawData);
-            rawData = unpremultiplied;
-        }
+    auto unpremultiplied = mjUnpremultiplyRGBA(buffer, static_cast<int>(width), static_cast<int>(height));
+    if (!unpremultiplied) {
+        return false;
     }
-
-    CGColorSpaceRelease(colorSpace);
-    CGContextRelease(context);
-    return rawData;
+    return true;
 }
 
 -(nullable CGImageRef)makeCGImage {
@@ -107,34 +117,27 @@
     return [self CGImage];
 }
 
-- (unsigned char *)mjRgbaPixels:(bool)premultiply {
+- (bool)mjRgbaPixels:(vector<uint8_t>&)buffer {
     CGImageRef imageRef = [self makeCGImage];
     NSUInteger width = CGImageGetWidth(imageRef);
     NSUInteger height = CGImageGetHeight(imageRef);
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    unsigned char *rawData = (unsigned char*) malloc(height * width * 4 * sizeof(unsigned char));
-    NSUInteger bytesPerPixel = 4;
+    NSUInteger bytesPerPixel = 4 * sizeof(uint8_t);
     NSUInteger bytesPerRow = bytesPerPixel * width;
     NSUInteger bitsPerComponent = 8;
-    CGContextRef context = CGBitmapContextCreate(rawData, width, height,
+    buffer.resize(bytesPerRow * height);
+    CGContextRef context = CGBitmapContextCreate(buffer.data(), width, height,
                                                  bitsPerComponent, bytesPerRow, colorSpace,
-                                                 kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
-    CGColorSpaceRelease(colorSpace);
+                                                 kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Host);
     CGContextSetFillColorWithColor(context, [[UIColor whiteColor] CGColor]);
     CGContextFillRect(context, CGRectMake(0, 0, width, height));
     CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
 
-    if (premultiply) {
-        auto unpremultiplied = [MozjpegImage mjUnpremultiplyRGBA:imageRef];
-        if (unpremultiplied) {
-            free(rawData);
-            rawData = unpremultiplied;
-        }
+    auto unpremultiplied = mjUnpremultiplyRGBA(buffer, static_cast<int>(width), static_cast<int>(height));
+    if (!unpremultiplied) {
+        return false;
     }
-    
-    CGColorSpaceRelease(colorSpace);
-    CGContextRelease(context);
-    return rawData;
+    return true;
 }
 
 -(nonnull uint8_t *) createRGB8Buffer {
@@ -149,8 +152,6 @@
     CGContextRef targetContext = CGBitmapContextCreate(targetMemory, width, height, 8, targetBytesPerRow, colorSpace, bitmapInfo);
 
     UIGraphicsPushContext(targetContext);
-
-    CGColorSpaceRelease(colorSpace);
 
     CGContextDrawImage(targetContext, CGRectMake(0, 0, width, height), self.CGImage);
 
@@ -188,44 +189,5 @@
 }
 
 #endif
-
-+(unsigned char*)mjUnpremultiplyRGBA:(CGImageRef)cgNewImageRef {
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    vImage_Buffer src;
-    void* result = nullptr;
-    vImage_CGImageFormat srcFormat = {
-        .bitsPerComponent = (uint32_t)CGImageGetBitsPerComponent(cgNewImageRef),
-        .bitsPerPixel = (uint32_t)CGImageGetBitsPerPixel(cgNewImageRef),
-        .colorSpace = colorSpace,
-        .bitmapInfo = kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big,
-        .renderingIntent = kCGRenderingIntentDefault
-    };
-    auto vEerror = vImageBuffer_InitWithCGImage(&src, &srcFormat, NULL, cgNewImageRef, kvImageNoFlags);
-    if (vEerror != kvImageNoError) {
-        free(src.data);
-        CGColorSpaceRelease(colorSpace);
-        return nullptr;
-    }
-    
-    vImage_Buffer dest = {
-        .data = malloc(CGImageGetWidth(cgNewImageRef) * CGImageGetHeight(cgNewImageRef) * 4),
-        .width = CGImageGetWidth(cgNewImageRef),
-        .height = CGImageGetHeight(cgNewImageRef),
-        .rowBytes = CGImageGetWidth(cgNewImageRef) * 4
-    };
-    vEerror = vImageUnpremultiplyData_RGBA8888(&src, &dest, kvImageNoFlags);
-    if (vEerror != kvImageNoError) {
-        free(src.data);
-        free(dest.data);
-        CGColorSpaceRelease(colorSpace);
-        return nullptr;
-    }
-    result = dest.data;
-    
-    free(src.data);
-    CGColorSpaceRelease(colorSpace);
-    return reinterpret_cast<unsigned char*>(result);
-}
-
 
 @end

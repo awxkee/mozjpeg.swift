@@ -15,8 +15,14 @@
 #define MozjpegImage   UIImage
 #endif
 
+#ifdef __cplusplus
+
+#include <vector>
+
+using namespace std;
+
 @interface MozjpegImage (MJImage)
-- (nonnull unsigned char *)mjRgbaPixels:(bool)premultiply;
+- (bool)mjRgbaPixels:(vector<uint8_t>&)buffer;
 - (nonnull uint8_t *) createRGB8Buffer;
 -(int)mjIntrinsicWidth;
 -(int)mjIntrinsicHeight;
@@ -24,3 +30,5 @@
 @end
 
 uint8_t * _Nonnull createRGB8Buffer(MozjpegImage * _Nonnull sourceImage);
+
+#endif
