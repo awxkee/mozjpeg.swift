@@ -10,6 +10,8 @@
 #import <Accelerate/Accelerate.h>
 #import <CoreGraphics/CoreGraphics.h>
 #import <vector>
+#import <bit>
+#import <type_traits>
 
 using namespace std;
 
@@ -61,7 +63,8 @@ using namespace std;
             return nil;
         }
 
-        const int pixelFormat = TJPF_RGBA;
+        bool isBigEndian = htonl(47) == 47;
+        const int pixelFormat = isBigEndian ? TJPF_RGBA : TJPF_ABGR;
 
         unsigned char* jpegBuf = nullptr;
         unsigned long jpegSize = 0;

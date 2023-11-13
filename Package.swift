@@ -46,5 +46,6 @@ let package = Package(
         .testTarget(
             name: "mozjpeg.swiftTests",
             dependencies: [.target(name: "mozjpeg")]),
-    ]
+    ],
+    cxxLanguageStandard: .cxx20
 )
